@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f7">
+<title>姜好的专属空间</title>
+<style>
+ { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+--apple-bg: #f5f5f7;
+--apple-card: rgba(255, 255, 255, 0.68);
+--apple-border: rgba(255, 255, 255, 0.85);
+--apple-text: #1d1d1f;
+--apple-sub: #86868b;
+--apple-accent: #0071e3;
+--theme-color: #B6E9B9;
+--theme-color-bg: rgba(182, 233, 185, 0.35);
+--font-sf: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+html, body {
+width: 100%;
+height: 100%;
+overflow: hidden;
+}
+body {
+background-image: url('https://i.postimg.cc/4NCdpk62/IMG-9095.png');
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
+color: var(--apple-text);
+font-family: var(--font-sf);
+font-weight: 400;
+font-size: 14px;
+line-height: 1.47059;
+letter-spacing: -0.016em;
+-webkit-font-smoothing: antialiased;
+}
+/* 取消圆角与设备外壳卡片框，铺满整个屏幕 */
+.app {
+width: 100vw;
+height: 100vh;
+height: 100dvh;
+background: transparent;
+border-radius: 0;
+overflow: hidden;
+display: flex;
+flex-direction: column;
+position: relative;
+box-shadow: none;
+}
+/* 顶栏设计 */
+.topbar {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: calc(env(safe-area-inset-top, 12px) + 8px) 24px 8px;
+flex: 0 0 auto;
+z-index: 5;
+background: rgba(255, 255, 255, 0.3);
+backdrop-filter: blur(15px);
+-webkit-backdrop-filter: blur(15px);
+}
+.topbar-close {
+width: 30px; height: 30px;
+display: grid; place-items: center;
+border: none; background: rgba(0, 0, 0, 0.06);
+color: var(--apple-sub); font-size: 13px; font-weight: 600;
+cursor: pointer; border-radius: 50%;
+transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.topbar-close:active { background: rgba(0, 0, 0, 0.12); transform: scale(0.92); }
+.page-indicator {
+font-size: 12px; color: var(--apple-sub);
+font-weight: 500; letter-spacing: -0.01em;
+}
+/* 页面视窗滚动区 */
+.viewport {
+flex: 1 1 auto;
+overflow-y: auto;
+overflow-x: hidden;
+padding: 12px 0 24px;
+scroll-behavior: smooth;
+-webkit-overflow-scrolling: touch;
+}
+.viewport::-webkit-scrollbar { width: 0; }
+.page {
+display: none;
+padding: 0 0 16px;
+animation: pageFade 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.page.active { display: block; }
+@keyframes pageFade {
+from { opacity: 0; transform: translateY(8px); }
+to   { opacity: 1; transform: translateY(0); }
+}
+/* 卡片玻璃拟态美化 */
+.glass-card {
+background: var(--apple-card);
+backdrop-filter: blur(25px);
+-webkit-backdrop-filter: blur(25px);
+border: 0.5px solid var(--apple-border);
+border-radius: 20px;
+margin: 0 16px 12px;
+overflow: hidden;
+box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+.section-title {
+padding: 16px 24px 6px;
+font-size: 11px;
+font-weight: 600;
+color: var(--apple-sub);
+text-transform: uppercase;
+letter-spacing: 0.06em;
+}
+/* 界面 1：主页 */
+.profile-box {
+display: flex;
+align-items: center;
+gap: 16px;
+padding: 20px;
+}
+.avatar {
+width: 68px; height: 68px;
+border-radius: 50%;
+background: #fff;
+border: 1px solid rgba(255, 255, 255, 0.8);
+box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+overflow: hidden;
+flex-shrink: 0;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-info { flex: 1; min-width: 0; }
+.profile-name { font-size: 20px; font-weight: 600; color: var(--apple-text); letter-spacing: -0.02em; }
+.profile-sub { font-size: 12px; color: var(--apple-sub); margin-top: 3px; line-height: 1.4; }
+.info-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 12px;
+padding: 12px 20px;
+border-bottom: 0.5px solid rgba(0, 0, 0, 0.04);
+}
+.info-row:last-child { border-bottom: none; }
+.info-label { font-size: 13.5px; color: var(--apple-sub); font-weight: 400; }
+.info-value { font-size: 13.5px; color: var(--apple-text); font-weight: 500; text-align: right; }
+.editable {
+outline: none;
+padding: 16px 20px;
+font-size: 13.5px;
+line-height: 1.5;
+color: var(--apple-text);
+border-radius: 16px;
+transition: background 0.2s;
+}
+.editable:focus { background: rgba(255, 255, 255, 0.5); }
+/* 关系状态环 (调整为 99%) */
+.ring-wrap { display: flex; align-items: center; gap: 16px; padding: 18px 20px; }
+.ring {
+position: relative; flex: 0 0 56px; width: 56px; height: 56px;
+border-radius: 50%; background: conic-gradient(var(--theme-color) 0 99%, rgba(0,0,0,0.06) 99% 100%);
+}
+.ring::after {
+content: "99%"; position: absolute; top: 50%; left: 50%;
+transform: translate(-50%, -50%); width: 42px; height: 42px;
+border-radius: 50%; background: rgba(255, 255, 255, 0.9); display: grid; place-items: center;
+font-size: 12px; font-weight: 700; color: #2d5a30;
+}
+.ring-text strong { display: block; font-size: 13.5px; font-weight: 600; color: var(--apple-text); margin-bottom: 2px; }
+.ring-text span { font-size: 12px; color: var(--apple-sub); }
+.chip-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 14px; }
+.chip {
+display: flex; align-items: center; justify-content: center;
+padding: 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.5);
+border: 0.5px solid var(--apple-border); font-size: 13px; font-weight: 500;
+color: var(--apple-text); cursor: pointer; text-decoration: none;
+transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.chip:active { background: rgba(255, 255, 255, 0.9); transform: scale(0.97); }
+/* 界面 2：提醒 & 音乐 & 计划表 & 旋律 */
+.plan-item {
+display: flex; align-items: center; gap: 14px;
+padding: 13px 20px; border-bottom: 0.5px solid rgba(0, 0, 0, 0.04);
+cursor: pointer; user-select: none; transition: background 0.15s;
+}
+.plan-item:last-child { border-bottom: none; }
+.plan-check {
+width: 18px; height: 18px; border-radius: 50%;
+border: 1.5px solid var(--apple-sub); display: grid; place-items: center;
+font-size: 10px; color: transparent; transition: all 0.2s;
+}
+.plan-item.done .plan-check { background: var(--theme-color); border-color: var(--theme-color); color: #1a431c; }
+.plan-text { font-size: 13.5px; color: var(--apple-text); flex: 1; outline: none; font-weight: 500; }
+.plan-item.done .plan-text { text-decoration: line-through; color: var(--apple-sub); }
+/* 音乐播放器 */
+.music-card {
+background: var(--apple-card);
+backdrop-filter: blur(25px);
+-webkit-backdrop-filter: blur(25px);
+border: 0.5px solid var(--apple-border);
+border-radius: 20px;
+padding: 18px; margin: 0 16px 12px;
+box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+.music-top { display: flex; align-items: center; gap: 14px; }
+.music-cover {
+width: 48px; height: 48px; border-radius: 12px; background: var(--theme-color);
+display: grid; place-items: center; color: #2d5a30; font-size: 18px;
+flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.music-meta { flex: 1; min-width: 0; }
+.music-title { font-size: 14px; font-weight: 600; color: var(--apple-text); }
+.music-artist { font-size: 12px; color: var(--apple-sub); margin-top: 1px; }
+.music-progress { margin-top: 14px; height: 4px; border-radius: 2px; background: rgba(0,0,0,0.06); overflow: hidden; cursor: pointer; }
+.music-progress-fill { width: 0%; height: 100%; background: #55a85a; border-radius: 2px; transition: width 0.1s linear; }
+.music-controls { display: flex; align-items: center; justify-content: center; gap: 28px; margin-top: 14px; }
+.m-btn { border: none; background: transparent; color: var(--apple-text); font-size: 15px; cursor: pointer; }
+.m-btn-play {
+width: 38px; height: 38px; border-radius: 50%;
+background: var(--theme-color); color: #1e4620; display: grid; place-items: center; font-size: 14px;
+box-shadow: 0 4px 12px rgba(182, 233, 185, 0.5);
+transition: transform 0.15s;
+}
+.m-btn-play:active { transform: scale(0.92); }
+/* 界面 3：纯邮箱 & 交互界面 (背景图) */
+.mail-screen {
+position: absolute; inset: 0;
+background-image: url('https://i.postimg.cc/wTdq75zV/IMG-9088.png');
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
+z-index: 100;
+display: none; flex-direction: column;
+animation: appleModalIn 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.mail-screen.active { display: flex; }
+@keyframes appleModalIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+.mail-header {
+display: flex; align-items: center; justify-content: space-between;
+padding: calc(env(safe-area-inset-top, 12px) + 8px) 20px 12px;
+background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px);
+border-bottom: 0.5px solid rgba(0,0,0,0.06); color: var(--apple-text);
+}
+.mail-back { border: none; background: transparent; color: var(--apple-accent); font-size: 15px; font-weight: 500; cursor: pointer; }
+.mail-header-title { font-size: 14px; font-weight: 600; color: var(--apple-text); }
+.mail-body {
+flex: 1; overflow-y: auto; padding: 20px;
+display: flex; flex-direction: column; gap: 12px;
+}
+/* 邮件气泡 - B6E9B9 变体 */
+.message-container { display: flex; width: 100%; margin-bottom: 4px; }
+.message-container.sent { justify-content: flex-end; }
+.message-container.received { justify-content: flex-start; }
+.message-bubble {
+max-width: 80%;
+padding: 12px 16px;
+background: rgba(255, 255, 255, 0.55) !important;
+backdrop-filter: blur(14px) !important;
+-webkit-backdrop-filter: blur(14px) !important;
+border: 1px solid rgba(255, 255, 255, 0.7) !important;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+border-radius: 20px !important;
+font-size: 13.5px;
+line-height: 1.55;
+color: var(--apple-text) !important;
+}
+.message-container.sent .message-bubble {
+background: var(--theme-color-bg) !important;
+border-color: rgba(255, 255, 255, 0.8) !important;
+}
+.mail-footer {
+display: flex; align-items: center; gap: 10px; padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px);
+border-top: 0.5px solid rgba(0,0,0,0.06);
+}
+.mail-input {
+flex: 1; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 10px 16px;
+font-size: 13.5px; outline: none; background: rgba(255,255,255,0.7); color: var(--apple-text);
+}
+.mail-send {
+border: none; background: #2d5a30; color: #fff;
+width: 32px; height: 32px; border-radius: 50%;
+cursor: pointer; display: grid; place-items: center; font-size: 13px;
+transition: transform 0.15s;
+}
+.mail-send:active { transform: scale(0.9); }
+/* 邮箱首页入口卡片 */
+.mail-card-btn {
+display: flex; align-items: center; gap: 14px;
+padding: 18px 20px; margin: 0 16px 12px;
+background: var(--apple-card); backdrop-filter: blur(25px);
+border: 0.5px solid var(--apple-border); border-radius: 20px;
+cursor: pointer; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+transition: transform 0.15s;
+}
+.mail-card-btn:active { transform: scale(0.98); background: rgba(255,255,255,0.9); }
+.mail-icon {
+width: 44px; height: 44px; border-radius: 12px;
+background: rgba(255,255,255,0.8); color: #2d5a30;
+display: grid; place-items: center; font-size: 18px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.mail-info { flex: 1; }
+.mail-title { font-size: 14.5px; font-weight: 600; color: var(--apple-text); }
+.mail-desc { font-size: 12px; color: var(--apple-sub); margin-top: 2px; }
+.mail-badge { background: #ff3b30; color: #fff; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+/* 通用 Modal 弹窗 */
+.custom-modal {
+position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4);
+z-index: 200; display: none; align-items: center; justify-content: center; padding: 16px;
+backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+animation: fadeIn 0.2s ease;
+}
+.custom-modal.active { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-box {
+background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(30px);
+-webkit-backdrop-filter: blur(30px);
+border: 0.5px solid rgba(255, 255, 255, 0.9); border-radius: 24px;
+width: 100%; max-width: 400px; max-height: 85vh; overflow-y: auto;
+padding: 20px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+}
+.modal-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.modal-title { font-size: 15px; font-weight: 600; color: var(--apple-text); }
+.modal-close { background: rgba(0,0,0,0.06); border: none; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 12px; color: var(--apple-sub); }
+/* 9宫格/多图网格系统 */
+.photo-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 8px;
+margin-bottom: 12px;
+}
+.photo-item {
+aspect-ratio: 1;
+border-radius: 12px;
+overflow: hidden;
+background: rgba(0,0,0,0.05);
+position: relative;
+}
+.photo-item img {
+width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.add-photo-bar {
+display: flex; gap: 8px; margin-top: 10px;
+}
+.add-photo-input {
+flex: 1; padding: 8px 12px; border-radius: 12px; border: 0.5px solid rgba(0,0,0,0.15);
+font-size: 12px; background: rgba(255,255,255,0.7); outline: none;
+}
+.add-photo-btn {
+padding: 8px 14px; border-radius: 12px; border: none; background: #2d5a30;
+color: #fff; font-size: 12px; font-weight: 500; cursor: pointer;
+}
+/* Twitter (𝕏) 风格推文弹窗界面 */
+.tweet-card {
+background: rgba(255, 255, 255, 0.92);
+border-radius: 20px;
+padding: 18px;
+color: #0f1419;
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.tweet-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.tweet-avatar { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+.tweet-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.tweet-user { flex: 1; }
+.tweet-name { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 4px; }
+.tweet-handle { color: #536471; font-size: 13px; }
+.tweet-content { font-size: 14px; line-height: 1.6; color: #0f1419; white-space: pre-line; }
+.tweet-time { margin-top: 12px; color: #536471; font-size: 12px; border-bottom: 1px solid #eff3f4; padding-bottom: 10px; }
+.tweet-stats {
+display: flex; gap: 20px; padding: 12px 0; border-bottom: 1px solid #eff3f4;
+font-size: 13px; color: #536471;
+}
+.tweet-stats strong { color: #0f1419; font-weight: 700; }
+.tweet-actions { display: flex; justify-content: space-around; padding-top: 10px; color: #536471; font-size: 16px; }
+.tweet-action-btn { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; }
+/* 底部极简导航栏 */
+.tabbar {
+flex: 0 0 auto;
+display: flex;
+align-items: center;
+justify-content: space-around;
+padding: 8px 16px calc(10px + env(safe-area-inset-bottom));
+background: rgba(255, 255, 255, 0.65);
+backdrop-filter: blur(25px);
+-webkit-backdrop-filter: blur(25px);
+border-top: 0.5px solid rgba(255, 255, 255, 0.8);
+z-index: 10;
+}
+.tab-btn {
+display: flex;
+align-items: center;
+justify-content: center;
+border: none;
+background: transparent;
+color: var(--apple-sub);
+font-size: 13px;
+font-weight: 500;
+cursor: pointer;
+padding: 8px 32px;
+border-radius: 16px;
+transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.tab-btn.active {
+color: #1e4620;
+background: var(--theme-color);
+font-weight: 600;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- 顶栏 -->
+<header class="topbar">
+<button class="topbar-close" id="closeBtn">✕</button>
+<span class="page-indicator"><span id="curPage">1</span> / 3</span>
+</header>
+<!-- 全局隐藏音频播放器 (保持后台持续播放) -->
+<audio id="bgMusic" src="http://music.163.com/song/media/outer/url?id=509330277" preload="auto" loop></audio>
+<!-- 页面主容器 -->
+<main class="viewport" id="viewport">
+<!-- ============ 1 界面：主页 ============ -->
+<section class="page active" data-page="0">
+<div class="glass-card profile-box">
+<div class="avatar">
+<img src="https://i.postimg.cc/0NbQv8G6/IMG-9119.jpg" id="avatarImg" alt="头像">
+</div>
+<div class="profile-info">
+<div class="profile-name">姜好 / 姜姜</div>
+<div class="profile-sub">约会日 · u and me
+Weather：晴... 适合睡觉</div>
+</div>
+</div>
+<div class="section-title">基本信息查阅</div>
+<div class="glass-card">
+<div class="info-row"><span class="info-label">约会装扮</span><span class="info-value">耳坠正太</span></div>
+<div class="info-row"><span class="info-label">属性</span><span class="info-value">21 · 双子 · 八无 · LE ENFP</span></div>
+<div class="info-row"><span class="info-label">想做的事</span><span class="info-value">只想和你做</span></div>
+<div class="info-row"><span class="info-label">约会地点</span><span class="info-value">余烬</span></div>
+</div>
+<div class="section-title">自我介绍</div>
+<div class="glass-card">
+<div class="editable" contenteditable="true">很想你，今天天气很好，适合睡觉，睡荤的还是素的？</div>
+</div>
+<div class="section-title">关系状态与备注</div>
+<div class="glass-card">
+<div class="ring-wrap">
+<div class="ring" aria-hidden="true"></div>
+<div class="ring-text">
+<strong>我们什么关系？蜜雪冰城吧</strong>
+<span>姜好 · @ 未 完 依 旧 持 续</span>
+</div>
+</div>
+</div>
+<div class="glass-card">
+<div class="editable" contenteditable="true">劳模店员获奖感言：感恩自己，鸣谢自己，成功勾引到很好很好的你。</div>
+</div>
+<div class="section-title">快捷通道</div>
+<div class="glass-card">
+<div class="chip-grid">
+<button class="chip" id="openBanping">［板评］查看</button>
+<button class="chip" id="openKalei">［卡类］查看</button>
+<button class="chip" id="openPaiban">［排班表］编辑</button>
+<button class="chip" id="openTwitterModal">空间跳转 ↗</button>
+</div>
+</div>
+</section>
+<!-- ============ 2 界面：提醒 & 音乐播放器 & 计划表 & 旋律 ============ -->
+<section class="page" data-page="1">
+<div class="section-title">Plan List 计划表 (5条)</div>
+<div class="glass-card">
+<div class="plan-item done" data-plan>
+<span class="plan-check">✓</span>
+<div class="plan-text" contenteditable="true">Drink water (多喝水)</div>
+</div>
+<div class="plan-item done" data-plan>
+<span class="plan-check">✓</span>
+<div class="plan-text" contenteditable="true">Read a book (读书)</div>
+</div>
+<div class="plan-item" data-plan>
+<span class="plan-check">✓</span>
+<div class="plan-text" contenteditable="true">Early to bed (早点睡觉)</div>
+</div>
+<div class="plan-item" data-plan>
+<span class="plan-check">✓</span>
+<div class="plan-text" contenteditable="true">Think of you (想你一遍)</div>
+</div>
+<div class="plan-item" data-plan>
+<span class="plan-check">✓</span>
+<div class="plan-text" contenteditable="true">Have a sweet dream (做个甜梦)</div>
+</div>
+</div>
+<div class="section-title">Now Playing (音乐播放器)</div>
+<div class="music-card">
+<div class="music-top">
+<div class="music-cover">♪</div>
+<div class="music-meta">
+<div class="music-title">专属专属旋律</div>
+<div class="music-artist" id="musicSub">点击播放 · 实时同步</div>
+</div>
+</div>
+<div class="music-progress" id="progressBar"><div class="music-progress-fill" id="musicFill"></div></div>
+<div class="music-controls">
+<button class="m-btn">⏮</button>
+<button class="m-btn m-btn-play" id="playBtn">▶</button>
+<button class="m-btn">⏭</button>
+</div>
+</div>
+<div class="section-title">个人旋律</div>
+<div class="glass-card">
+<div style="padding: 16px 20px; font-size: 13.5px; line-height: 1.6;">
+<p style="color: #2d5a30; font-weight: 600;"><b>主旋律：</b></p>
+<p style="margin-bottom: 10px;">白话 日常 挑逗 恶趣味 热脸贱</p>
+<p style="color: #2d5a30; font-weight: 600;"><b>副旋律：</b></p>
+<p style="margin-bottom: 10px;">轻浮 微擦 对抗路 deeptalk</p>
+<p style="color: #2d5a30; font-weight: 600;"><b>偶尔掉落特别旋律：</b></p>
+<p style="color: var(--apple-sub); font-size: 12.5px;">社畜淡淡人机 我一定要上班吗 发现说话的时候把眼睛闭上很舒服</p>
+</div>
+</div>
+</section>
+<!-- ============ 3 界面：纯邮箱 & 交互界面 ============ -->
+<section class="page" data-page="2">
+<div class="section-title">新邮件提醒</div>
+<div class="mail-card-btn" id="openMailBtn">
+<div class="mail-icon">✉</div>
+<div class="mail-info">
+<div class="mail-title">You got a new message</div>
+<div class="mail-desc">Don't forget to smile today!</div>
+</div>
+<span class="mail-badge">1</span>
+</div>
+</section>
+</main>
+<!-- ============ 纯邮箱交互界面 ============ -->
+<div class="mail-screen" id="mailScreen">
+<div class="mail-header">
+<button class="mail-back" id="closeMail">‹ 返回</button>
+<div class="mail-header-title">姜好 · 邮件信箱</div>
+<div style="width:30px;"></div>
+</div>
+<div class="mail-body" id="mailBody">
+<div class="message-container sent">
+<div class="message-bubble">还想听听你能说什么？</div>
+</div>
+<div class="message-container received">
+<div class="message-bubble" contenteditable="true">再过来点，我唱给你听：骗你的，只想亲你。</div>
+</div>
+</div>
+<div class="mail-footer">
+<input type="text" class="mail-input" id="mailInput" placeholder="发消息...">
+<button class="mail-send" id="mailSendBtn">↑</button>
+</div>
+</div>
+<!-- 弹窗：板评（支持多图九宫格排版与添加） -->
+<div class="custom-modal" id="modalBanping">
+<div class="modal-box">
+<div class="modal-header-row">
+<span class="modal-title">［板评］多图展示区</span>
+<button class="modal-close" onclick="closeModals()">✕</button>
+</div>
+<div class="photo-grid" id="banpingGrid">
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400"></div>
+</div>
+<div class="add-photo-bar">
+<input type="text" class="add-photo-input" id="banpingInput" placeholder="粘贴图片 URL 添加...">
+<button class="add-photo-btn" id="addBanpingBtn">添加图片</button>
+</div>
+</div>
+</div>
+<!-- 弹窗：卡类（支持多图九宫格排版与添加） -->
+<div class="custom-modal" id="modalKalei">
+<div class="modal-box">
+<div class="modal-header-row">
+<span class="modal-title">［卡类］多图展示区</span>
+<button class="modal-close" onclick="closeModals()">✕</button>
+</div>
+<div class="photo-grid" id="kaleiGrid">
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400"></div>
+<div class="photo-item"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400"></div>
+</div>
+<div class="add-photo-bar">
+<input type="text" class="add-photo-input" id="kaleiInput" placeholder="粘贴图片 URL 添加...">
+<button class="add-photo-btn" id="addKaleiBtn">添加图片</button>
+</div>
+</div>
+</div>
+<!-- 弹窗：排班表 -->
+<div class="custom-modal" id="modalPaiban">
+<div class="modal-box">
+<div class="modal-header-row"><span class="modal-title">［排班表］自由编辑</span><button class="modal-close" onclick="closeModals()">✕</button></div>
+<div class="editable" contenteditable="true" style="background: rgba(255,255,255,0.7); min-height: 160px; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 14px; padding: 14px;">
+周一：全天在线 约会中
+
+周二：休息日 (不接单)
+
+周三至周五：晚上 8:00 - 11:00
+
+周末：甜蜜双人档
+</div>
+</div>
+</div>
+<!-- 弹窗：Twitter 风格 "亲爱的先听我说。" 空间跳转界面 -->
+<div class="custom-modal" id="modalTwitter">
+<div class="modal-box" style="padding: 12px; background: rgba(255,255,255,0.96);">
+<div class="tweet-card">
+<div class="tweet-header">
+<div class="tweet-avatar"><img src="https://i.postimg.cc/0NbQv8G6/IMG-9119.jpg"></div>
+<div class="tweet-user">
+<div class="tweet-name">姜好 · 姜姜 <span style="color:#1d9bf0;">✓</span></div>
+<div class="tweet-handle">@jianghao_official</div>
+</div>
+<button class="modal-close" onclick="closeModals()">✕</button>
+</div>
+<div style="font-weight: 700; font-size: 15px; margin-bottom: 8px; color:#0f1419;">亲爱的先听我说。</div>
+<div class="tweet-content">
+• 婉拒男板 / 低恋板 / 萌新板 / 低代入 / 单口半单口 / 不配合
+• 婉拒一恋多 / 旁观插话 / 审视 / 熟人披马甲（别被我认出来）
+• 习惯回合制对话 偶尔可以 次数多了我会叫停退单
+• 严拒单内恶搞接恶俗烂梗 接到永拒 + 避雷条
+• 别莫名对我有太大期待 / 幻想 我只是一个喜欢甜甜恋爱的普通人
+• 单内不看微信 有什么话直接单内说就可以
+• 不喜小窝 婉拒小窝（太社恐了，更喜欢二人世界）
+• 单后正常清好友 · 期待见面
+<span style="color:#2d5a30; font-weight: 600;">▴ 以上须知默认已读</span>
+</div>
+<div class="tweet-time">下午 5:20 · 恋爱特区</div>
+<div class="tweet-stats">
+<div><strong>1,314</strong> 转推</div>
+<div><strong>69</strong> 引用</div>
+<div><strong>5,200</strong> 喜欢</div>
+</div>
+<div class="tweet-actions">
+<div class="tweet-action-btn">💬 69</div>
+<div class="tweet-action-btn">🔁 1,314</div>
+<div class="tweet-action-btn" style="color: #e0245e;">♥ 5,200</div>
+<div class="tweet-action-btn">⎘</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 底部 2 字导航栏 -->
+<nav class="tabbar" id="tabbar">
+<button class="tab-btn active" data-target="0">首页</button>
+<button class="tab-btn" data-target="1">提醒</button>
+<button class="tab-btn" data-target="2">邮箱</button>
+</nav>
+</div>
+<script>
+(function () {
+"use strict";
+// 页面切换逻辑
+var pages = document.querySelectorAll(".page");
+var tabBtns = document.querySelectorAll(".tab-btn");
+var viewport = document.getElementById("viewport");
+var curPageEl = document.getElementById("curPage");
+var current = 0;
+function switchPage(index) {
+if (index < 0 || index >= pages.length || index === current) return;
+pages[current].classList.remove("active");
+tabBtns[current].classList.remove("active");
+current = index;
+pages[current].classList.add("active");
+tabBtns[current].classList.add("active");
+curPageEl.textContent = current + 1;
+viewport.scrollTop = 0;
+}
+tabBtns.forEach(function (btn) {
+btn.addEventListener("click", function () {
+switchPage(parseInt(btn.dataset.target, 10));
+});
+});
+document.getElementById("closeBtn").addEventListener("click", function () { switchPage(0); });
+// 计划表打勾
+document.querySelectorAll("[data-plan]").forEach(function (item) {
+item.addEventListener("click", function (e) {
+if (e.target.classList.contains("plan-text")) return;
+item.classList.toggle("done");
+});
+});
+// 音频播放控制 (常驻后台不暂停)
+var bgMusic = document.getElementById("bgMusic");
+var playBtn = document.getElementById("playBtn");
+var musicFill = document.getElementById("musicFill");
+var musicSub = document.getElementById("musicSub");
+var progressBar = document.getElementById("progressBar");
+playBtn.addEventListener("click", function () {
+if (bgMusic.paused) {
+bgMusic.play().then(function() {
+playBtn.textContent = "⏸";
+musicSub.textContent = "正在播放 · 恋爱音律";
+}).catch(function(e) { console.log(e); });
+} else {
+bgMusic.pause();
+playBtn.textContent = "▶";
+musicSub.textContent = "已暂停播放";
+}
+});
+bgMusic.addEventListener("timeupdate", function () {
+if (bgMusic.duration) {
+var pct = (bgMusic.currentTime / bgMusic.duration) * 100;
+musicFill.style.width = pct + "%";
+}
+});
+progressBar.addEventListener("click", function (e) {
+var rect = progressBar.getBoundingClientRect();
+var pos = (e.clientX - rect.left) / rect.width;
+if (bgMusic.duration) {
+bgMusic.currentTime = pos * bgMusic.duration;
+}
+});
+// 邮箱逻辑 (模拟智能沟通递进)
+var mailScreen = document.getElementById("mailScreen");
+var openMailBtn = document.getElementById("openMailBtn");
+var closeMail = document.getElementById("closeMail");
+var mailBody = document.getElementById("mailBody");
+var mailInput = document.getElementById("mailInput");
+var mailSendBtn = document.getElementById("mailSendBtn");
+var replyDialogs = [
+{ key: "睡", reply: "睡荤的还是素的？我都配合你。" },
+{ key: "想你", reply: "此女最喜欢随单麦 尾音上扬时我们靠得更近了 心也是" },
+{ key: "亲", reply: "再过来点，我唱给你听：骗你的，只想亲你。" },
+{ key: "好", reply: "Have a nice day! Next is our dating time." },
+{ key: "爱", reply: "Heaven has blessed me with a wonderful, wonderful you." }
+];
+var defaultReplyIndex = 0;
+var fallbackReplies = [
+"真没找借口 借口不是 把你借我亲一口吗？",
+"邪恶姜坏勾引第一步：这位女士 不好意思说话就先牵紧我吧",
+"嗯...今天也超级想你。",
+"你在听吗？要不要再多说一句。"
+];
+openMailBtn.addEventListener("click", function () {
+mailScreen.classList.add("active");
+mailBody.scrollTop = mailBody.scrollHeight;
+});
+closeMail.addEventListener("click", function () {
+mailScreen.classList.remove("active");
+});
+function handleMailSend() {
+var text = mailInput.value.trim();
+if (!text) text = "今天过得怎么样？";
+var sentWrap = document.createElement("div");
+sentWrap.className = "message-container sent";
+sentWrap.innerHTML = '<div class="message-bubble">' + text + '</div>';
+mailBody.appendChild(sentWrap);
+mailInput.value = "";
+mailBody.scrollTop = mailBody.scrollHeight;
+// 智能识别匹配逻辑
+var matchedReply = "";
+for (var i = 0; i < replyDialogs.length; i++) {
+if (text.indexOf(replyDialogs[i].key) !== -1) {
+matchedReply = replyDialogs[i].reply;
+break;
+}
+}
+if (!matchedReply) {
+matchedReply = fallbackReplies[defaultReplyIndex % fallbackReplies.length];
+defaultReplyIndex++;
+}
+setTimeout(function() {
+var replyWrap = document.createElement("div");
+replyWrap.className = "message-container received";
+replyWrap.innerHTML = '<div class="message-bubble" contenteditable="true">' + matchedReply + '</div>';
+mailBody.appendChild(replyWrap);
+mailBody.scrollTop = mailBody.scrollHeight;
+}, 700);
+}
+mailSendBtn.addEventListener("click", handleMailSend);
+mailInput.addEventListener("keypress", function (e) {
+if (e.key === "Enter") handleMailSend();
+});
+// Modal 控制与图片添加函数
+window.closeModals = function() {
+document.querySelectorAll(".custom-modal").forEach(function(m) { m.classList.remove("active"); });
+};
+document.getElementById("openBanping").addEventListener("click", function() {
+document.getElementById("modalBanping").classList.add("active");
+});
+document.getElementById("openKalei").addEventListener("click", function() {
+document.getElementById("modalKalei").classList.add("active");
+});
+document.getElementById("openPaiban").addEventListener("click", function() {
+document.getElementById("modalPaiban").classList.add("active");
+});
+document.getElementById("openTwitterModal").addEventListener("click", function() {
+document.getElementById("modalTwitter").classList.add("active");
+});
+// 动态追加图片至网格
+function appendPhoto(gridId, inputId) {
+var input = document.getElementById(inputId);
+var url = input.value.trim();
+if (url) {
+var item = document.createElement("div");
+item.className = "photo-item";
+item.innerHTML = '<img src="' + url + '">';
+document.getElementById(gridId).appendChild(item);
+input.value = "";
+}
+}
+document.getElementById("addBanpingBtn").addEventListener("click", function() {
+appendPhoto("banpingGrid", "banpingInput");
+});
+document.getElementById("addKaleiBtn").addEventListener("click", function() {
+appendPhoto("kaleiGrid", "kaleiInput");
+});
+})();
+</script>
+</body>
+</html>
